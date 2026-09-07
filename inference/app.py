@@ -168,13 +168,17 @@ st.sidebar.info("Maksimal rentang prediksi kalender 30 hari.")
 
 last_hist_date = meta_by_pid[selected_pid]["last_hist_date"]
 future_dates = meta_by_pid[selected_pid]["future_dates"]
-min_selectable_date = last_hist_date + timedelta(days=1)
-max_selectable_date = future_dates[-1]
 
-# Default rentang tanggal: 3 - 14 Oktober 2026, di-clamp supaya tetap valid
-# walau utk produk tertentu histori-nya berakhir jauh lebih telat/awal.
-default_start = min(max(date(2026, 10, 3), min_selectable_date), max_selectable_date)
-default_end = min(max(date(2026, 10, 14), default_start), max_selectable_date)
+# Batasan tanggal: hanya tahun 2026, dari tanggal hari ini sampai akhir tahun (31 Des 2026)
+today = date.today()
+min_selectable_date = max(today, date(2026, 1, 1), last_hist_date + timedelta(days=1))
+max_selectable_date = min(date(2026, 12, 31), future_dates[-1])
+if min_selectable_date > max_selectable_date:
+    min_selectable_date = max_selectable_date
+
+# Default rentang tanggal: mulai dari hari ini s.d. 7 hari ke depan (maksimal akhir tahun)
+default_start = min_selectable_date
+default_end = min(default_start + timedelta(days=7), max_selectable_date)
 
 picked_dates = st.sidebar.date_input(
     "Rentang Tanggal:",
